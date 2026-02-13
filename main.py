@@ -1,4 +1,8 @@
+from pytmx import TiledMap
+from Utils.GameSprite import GameSprite
 from settings import * 
+from pygame import Event
+from Utils.Helper import load_map, pipe
 
 class Game ():
     def __init__(self) -> None:
@@ -11,19 +15,47 @@ class Game ():
 
         self.running = True
 
-    def __quit_game_manager ( self ):
+    def __time_to_quit ( self, event: Event ):
+        self.running = not event.type == pygame.QUIT
+        return event
+
+    def __check_event_loop ( self ):
         for event in pygame.event.get():
-            self.running =  not event.type == pygame.QUIT
+            self.__time_to_quit(event)
 
     def __set_background ( self ): self.screen.fill(BG_COLOR)
 
+    def __set_ground ( self, map: TiledMap ) -> TiledMap:
+        for x, y, image in map.get_layer_by_name('Main').tiles():
+            GameSprite(image, self.all_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
+        return map
+
+    def __set_objects ( self, map: TiledMap ) -> TiledMap:
+        for x, y, image in map.get_layer_by_name('Decoration').tiles():
+            GameSprite(image, self.all_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
+        return map
+
+    def __set_entities ( self, map: TiledMap ) -> TiledMap:
+        for entity in map.get_layer_by_name('Entities'):
+            print(entity)
+        return map
+
+    def __setup_game_assets ( self ):
+        pipe(
+            self.__set_ground,
+            self.__set_objects,
+            self.__set_entities
+        )(load_map())
+
     def run ( self ):
+
+        self.__setup_game_assets()
 
         while self.running:
 
             dt = self.clock.tick(FRAMERATE) / 1000
 
-            self.__quit_game_manager()
+            self.__check_event_loop()
 
             self.__set_background()
 
