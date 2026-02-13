@@ -1,3 +1,4 @@
+from Utils.AllSprites import AllSprites
 from settings import * 
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
@@ -14,7 +15,7 @@ class Game ():
         pygame.display.set_caption("PLATFORMER VII --> I'm just a platfomer...")
         self.clock = pygame.time.Clock()
 
-        self.all_sprites = pygame.sprite.Group()
+        self.all_sprites = AllSprites()
 
         self.running = True
 
@@ -39,7 +40,6 @@ class Game ():
         return map
 
     def __make_player ( self, entity: TiledObject ):
-        print(entity.name)
         if not entity.name == 'Player': return entity
 
         frames = get_frames('assets', 'images', 'player')
@@ -56,7 +56,10 @@ class Game ():
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
-            pipe( self.__make_player, self.__make_worm )( entity )
+            pipe( 
+                self.__make_player, 
+                self.__make_worm 
+            )( entity )
         return map
 
     def __setup_game_assets ( self ):
@@ -80,7 +83,7 @@ class Game ():
 
             self.all_sprites.update(dt)
 
-            self.all_sprites.draw(self.screen)
+            self.all_sprites.draw(self.player.rect.center)
 
             pygame.display.update()
 
