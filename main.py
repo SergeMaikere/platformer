@@ -1,8 +1,11 @@
-from pytmx import TiledMap
-from Utils.GameSprite import GameSprite
 from settings import * 
+from pytmx import TiledMap
+from pytmx.pytmx import TiledObject
+from Utils.GameSprite import GameSprite
 from pygame import Event
-from Utils.Helper import load_map, pipe
+from Utils.Helper import get_frames, load_map, pipe
+from Entities.Player import Player
+from Entities.Worm import Worm
 
 class Game ():
     def __init__(self) -> None:
@@ -35,9 +38,25 @@ class Game ():
             GameSprite(image, self.all_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
         return map
 
+    def __make_player ( self, entity: TiledObject ):
+        print(entity.name)
+        if not entity.name == 'Player': return entity
+
+        frames = get_frames('assets', 'images', 'player')
+        if frames: self.player = Player(frames, self.all_sprites, topleft=(entity.x, entity.y))
+        return entity
+
+    def __make_worm ( self, entity: TiledObject ):
+        if not entity.name == 'Worm': return entity
+
+        frames = get_frames('assets', 'images', 'enemies', 'worm')
+        if frames: Worm(frames, self.all_sprites, topleft=(entity.x, entity.y))
+        return entity
+
+
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
-            print(entity)
+            pipe( self.__make_player, self.__make_worm )( entity )
         return map
 
     def __setup_game_assets ( self ):
