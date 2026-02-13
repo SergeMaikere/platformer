@@ -1,4 +1,4 @@
-from pygame import Surface
+from pygame import FRect, Surface
 from settings import *
 from pygame.sprite import Group
 
@@ -7,4 +7,4 @@ class GameSprite ( pygame.sprite.Sprite ):
 		super().__init__(*groups)
 
 		self.image = image
-		self.rect = image.get_frect(**anchor)
+		self.rect: FRect = image.get_frect(**anchor)
