@@ -3,6 +3,7 @@ from settings import *
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
 from Utils.GameSprite import GameSprite
+from Utils.Group import Group
 from pygame import Event
 from Utils.Helper import get_frames, load_map, pipe
 from Entities.Player import Player
@@ -15,7 +16,8 @@ class Game ():
         pygame.display.set_caption("PLATFORMER VII --> I'm just a platfomer...")
         self.clock = pygame.time.Clock()
 
-        self.all_sprites = AllSprites()
+        self.all_sprites = AllSprites('all_sprites')
+        self.collision_sprites = Group('collision_sprites')
 
         self.running = True
 
@@ -31,7 +33,7 @@ class Game ():
 
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
         for x, y, image in map.get_layer_by_name('Main').tiles():
-            GameSprite(image, self.all_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
+            GameSprite(image, self.all_sprites, self.collision_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
         return map
 
     def __set_objects ( self, map: TiledMap ) -> TiledMap:
@@ -43,7 +45,7 @@ class Game ():
         if not entity.name == 'Player': return entity
 
         frames = get_frames('assets', 'images', 'player')
-        if frames: self.player = Player(frames, self.all_sprites, topleft=(entity.x, entity.y))
+        if frames: self.player = Player(frames, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
         return entity
 
     def __make_worm ( self, entity: TiledObject ):

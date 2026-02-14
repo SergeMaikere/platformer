@@ -1,7 +1,7 @@
 from os import PathLike
 from pygame import Surface
 from settings import *
-from typing import Callable
+from typing import Any, Callable, Iterable
 from pytmx import TiledMap
 from functools import reduce
 
@@ -20,3 +20,7 @@ def get_frames ( *path: str ) -> list[Surface] | None:
 	for root, _directories, files in walk( join(*path) ):
 		if files: frames = [ get_frame(root, file) for file in files ]
 	return frames
+
+def get_first_match ( items: Iterable, func: Callable, default: Any = None ):
+	generator = ( item for item in items if func(item) )
+	return next(generator, default)

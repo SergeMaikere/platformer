@@ -1,10 +1,11 @@
 from pygame.sprite import Sprite
 from Entities.Player import Player
+from Utils.Group import Group
 from settings import *
 
-class AllSprites ( pygame.sprite.Group ):
-	def __init__(self, *sprites: Sprite) -> None:
-		super().__init__(*sprites)
+class AllSprites ( Group ):
+	def __init__(self, name: str, *sprites: Sprite) -> None:
+		super().__init__(name, *sprites)
 
 		self.display_surface = pygame.display.get_surface()
 		self.offset = pygame.Vector2()
