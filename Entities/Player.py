@@ -1,4 +1,5 @@
 from pygame import Surface
+from pygame.key import ScancodeWrapper
 from pygame.sprite import Group
 from settings import *
 from Utils.Entity import Entity
@@ -9,17 +10,40 @@ class Player ( Entity ):
 
 		self.frames = frames
 		self.collision_sprites = collision_sprites
-  
+
+		self.is_grounded = False
+		self.gravity = 50
+		self.jump_force = 10
+
+
+	def __set_is_grounded ( self ):
+		player_bottom = pygame.FRect((0, 0), (self.rect.width, 2)).move_to(midtop=self.rect.midbottom)
+		self.is_grounded = player_bottom.collidelist( [sprite.rect for sprite in self.collision_sprites] ) >= 0
+
+	def __left_or_right ( self, keys: ScancodeWrapper ): 
+		self.direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
+
+	def __jump ( self, keys: ScancodeWrapper ):
+		if keys[pygame.K_SPACE] and self.is_grounded: self.direction.y = -self.jump_force
+
 
 	def _get_direction( self ):
 		keys = pygame.key.get_pressed()
-		self.direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
-		self.direction.y = int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])
-		self.direction = self.direction.normalize() if self.direction else self.direction
+		self.__jump(keys)
+		self.__left_or_right(keys)
 
-	
+	def __set_gravity ( self, dt: float ): self.direction.y += self.gravity * dt
+
+	def _y_collision_manager ( self, collision_sprites: Group ):
+		for sprite in collision_sprites:
+			if sprite.rect.colliderect(self.hitbox):
+				if self.direction.y >= 0: self.hitbox.bottom = sprite.rect.top
+				if self.direction.y < 0: self.hitbox.top = sprite.rect.bottom
+				self.direction.y = 0
 
 	def update ( self, dt ):
+		self.__set_is_grounded()
 		self._get_direction()
+		self.__set_gravity(dt)
 		self._manage_collision(self.collision_sprites, dt)
 		self._move_after_collision(dt)
