@@ -17,7 +17,7 @@ class Entity ( GameSprite ):
 		self.hitbox = self.rect.copy()
 
 
-	def _get_direction ( self ):
+	def _set_direction ( self ):
 		pass
 
 	def _move ( self, dt: float ): 

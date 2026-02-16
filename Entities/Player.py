@@ -9,6 +9,7 @@ class Player ( Entity ):
 		super().__init__(frames, *groups, **anchor)
 
 		self.frames = frames
+		self.flip = False
 		self.collision_sprites = collision_sprites
 
 		self.is_grounded = False
@@ -27,10 +28,14 @@ class Player ( Entity ):
 		if keys[pygame.K_SPACE] and self.is_grounded: self.direction.y = -self.jump_force
 
 
-	def _get_direction( self ):
+	def _set_direction( self ):
 		keys = pygame.key.get_pressed()
 		self.__jump(keys)
 		self.__left_or_right(keys)
+
+	def __set_flip ( self ): 
+		if self.direction.x < 0: self.flip = True
+		if self.direction.x > 0: self.flip = False
 
 	def __set_gravity ( self, dt: float ): self.direction.y += self.gravity * dt
 
@@ -47,7 +52,9 @@ class Player ( Entity ):
 		else:
 			self.frames_i = self.frames_i + self.animation_speed * dt if self.direction else 0
 
-	def __set_image ( self ): self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
+	def __set_image ( self ): 
+		self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
+		self.image = pygame.transform.flip(self.image, self.flip, False)
 
 	def _animate ( self, dt: float ):
 		self.__set_frame_i(dt)
@@ -55,7 +62,8 @@ class Player ( Entity ):
 		
 	def update ( self, dt ):
 		self.__set_is_grounded()
-		self._get_direction()
+		self._set_direction()
+		self.__set_flip()
 		self.__set_gravity(dt)
 		self._manage_collision(self.collision_sprites, dt)
 		self._move_after_collision(dt)
