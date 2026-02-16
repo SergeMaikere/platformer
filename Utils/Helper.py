@@ -1,9 +1,10 @@
 from os import PathLike
 from pygame import Surface
 from settings import *
-from typing import Any, Callable, Iterable
+from typing import Callable, Iterable
 from pytmx import TiledMap
 from functools import reduce
+from random import uniform
 
 pipe = lambda *funcs: lambda arg: reduce( lambda g, f: f(g), funcs, arg )
 
@@ -22,6 +23,4 @@ def get_frames ( *path: str ) -> list[Surface] | None:
 			frames = [ get_frame(root, file) for file in sorted(files, key= lambda filename: int(filename.split('.')[0])) ]
 	return frames
 
-def get_first_match ( items: Iterable, func: Callable, default: Any = None ):
-	generator = ( item for item in items if func(item) )
-	return next(generator, default)
+def get_random_pos (): return ( uniform(0, WINDOW_WIDTH), uniform(0, WINDOW_HEIGHT) ) 

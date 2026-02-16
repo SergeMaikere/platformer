@@ -5,9 +5,10 @@ from pytmx.pytmx import TiledObject
 from Utils.GameSprite import GameSprite
 from Utils.Group import Group
 from pygame import Event
-from Utils.Helper import get_frames, load_map, pipe
+from Utils.Helper import get_frames, load_map, pipe, get_random_pos
 from Entities.Player import Player
 from Entities.Worm import Worm
+from Entities.Bee import Bee
 
 class Game ():
     def __init__(self) -> None:
@@ -64,7 +65,11 @@ class Game ():
             )( entity )
         return map
 
-    def __setup_game_assets ( self ):
+    def __set_bee ( self ):
+        frames = get_frames('assets', 'images', 'enemies', 'bee')
+        if frames: Bee(frames, self.all_sprites, topleft= self.player.rect.center)
+
+    def __setup_map_assets ( self ):
         pipe(
             self.__set_ground,
             self.__set_objects,
@@ -73,7 +78,8 @@ class Game ():
 
     def run ( self ):
 
-        self.__setup_game_assets()
+        self.__setup_map_assets()
+        self.__set_bee()
 
         while self.running:
 
