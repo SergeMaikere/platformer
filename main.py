@@ -1,11 +1,12 @@
+from pygame.mixer import music
 from Utils.AllSprites import AllSprites
 from settings import * 
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
 from Utils.GameSprite import GameSprite
 from Utils.Group import Group
-from pygame import Event
-from Utils.Helper import get_frames, load_map, pipe, get_random_pos
+from pygame import Event, Sound
+from Utils.Helper import get_frames, load_sounds, load_map, pipe, get_random_pos
 from Entities.Player import Player
 from Entities.Worm import Worm
 from Entities.Bee import Bee
@@ -76,9 +77,26 @@ class Game ():
             self.__set_entities
         )(load_map())
 
+    def __set_sounds ( self): self.sounds = load_sounds('assets', 'audio')
+
+    def __set_volumes ( self ):
+        if self.sounds:
+            self.sounds['music'].set_volume(3)
+            self.sounds['shoot'].set_volume(3)
+            self.sounds['impact'].set_volume(3)
+
+    def __play_soundtrack( self ): 
+        if self.sounds: self.sounds['music'].play()
+
+    def __setup_sounds ( self ):
+            self.__set_sounds()
+            self.__set_volumes()
+            self.__play_soundtrack()
+
     def run ( self ):
 
         self.__setup_map_assets()
+        self.__setup_sounds()
         self.__set_bee()
 
         while self.running:
