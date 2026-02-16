@@ -41,9 +41,22 @@ class Player ( Entity ):
 				if self.direction.y < 0: self.hitbox.top = sprite.rect.bottom
 				self.direction.y = 0
 
+	def __set_frame_i ( self, dt: float ):
+		if not self.is_grounded: 
+			self.frames_i = 1
+		else:
+			self.frames_i = self.frames_i + self.animation_speed * dt if self.direction else 0
+
+	def __set_image ( self ): self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
+
+	def _animate ( self, dt: float ):
+		self.__set_frame_i(dt)
+		self.__set_image()
+		
 	def update ( self, dt ):
 		self.__set_is_grounded()
 		self._get_direction()
 		self.__set_gravity(dt)
 		self._manage_collision(self.collision_sprites, dt)
 		self._move_after_collision(dt)
+		self._animate(dt)

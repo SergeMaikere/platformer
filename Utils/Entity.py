@@ -9,6 +9,7 @@ class Entity ( GameSprite ):
 
 		self.frames = frames
 		self.frames_i = 0
+		self.animation_speed = 10
 
 		self.direction = pygame.Vector2()
 		self.speed = 300
@@ -23,7 +24,7 @@ class Entity ( GameSprite ):
 		self.rect.center += self.direction * self.speed * dt
 
 	def _animate ( self, dt: float ):
-		self.frames_i = self.frames_i + 5 * dt if self.direction else 0
+		self.frames_i = self.frames_i + self.animation_speed * dt
 		self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
 
 	def _move_x_wise ( self, dt: float ):
