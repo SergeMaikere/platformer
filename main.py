@@ -1,12 +1,12 @@
-from pygame.mixer import music
 from Utils.AllSprites import AllSprites
+from Utils.Timer import Timer
 from settings import * 
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
 from Utils.GameSprite import GameSprite
 from Utils.Group import Group
-from pygame import Event, Sound
-from Utils.Helper import get_frames, load_sounds, load_map, pipe, get_random_pos
+from pygame import Event
+from Utils.Helper import get_frames, get_random_pos, load_sounds, load_map, pipe
 from Entities.Player import Player
 from Entities.Worm import Worm
 from Entities.Bee import Bee
@@ -18,8 +18,13 @@ class Game ():
         pygame.display.set_caption("PLATFORMER VII --> I'm just a platfomer...")
         self.clock = pygame.time.Clock()
 
+        self.map = load_map()
+
         self.all_sprites = AllSprites('all_sprites')
         self.collision_sprites = Group('collision_sprites')
+
+        self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
+        self.bee_timer = Timer(3000, self.__make_bee, repeat= True, autostart= True)
 
         self.running = True
 
@@ -57,6 +62,8 @@ class Game ():
         if frames: Worm(frames, self.all_sprites, topleft=(entity.x, entity.y))
         return entity
 
+    def __make_bee ( self ):
+        if self.bee_frames: Bee(self.bee_frames, self.all_sprites, topleft= get_random_pos( self.map.width * TILE_SIZE, self.map.height * TILE_SIZE ))
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
@@ -66,16 +73,13 @@ class Game ():
             )( entity )
         return map
 
-    def __set_bee ( self ):
-        frames = get_frames('assets', 'images', 'enemies', 'bee')
-        if frames: Bee(frames, self.all_sprites, topleft= self.player.rect.center)
 
     def __setup_map_assets ( self ):
         pipe(
             self.__set_ground,
             self.__set_objects,
             self.__set_entities
-        )(load_map())
+        )( self.map )
 
     def __set_sounds ( self): self.sounds = load_sounds('assets', 'audio')
 
@@ -97,7 +101,6 @@ class Game ():
 
         self.__setup_map_assets()
         self.__setup_sounds()
-        self.__set_bee()
 
         while self.running:
 
@@ -106,6 +109,8 @@ class Game ():
             self.__check_event_loop()
 
             self.__set_background()
+
+            self.bee_timer.update()
 
             self.all_sprites.update(dt)
 

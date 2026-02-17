@@ -1,6 +1,7 @@
 from pygame import Surface
 from pygame.key import ScancodeWrapper
 from pygame.sprite import Group
+from Utils.Timer import Timer
 from settings import *
 from Utils.Entity import Entity
 
@@ -10,11 +11,14 @@ class Player ( Entity ):
 
 		self.frames = frames
 		self.flip = False
+
+		self.shoot_timer = Timer(500)
+
 		self.collision_sprites = collision_sprites
 
 		self.is_grounded = False
 		self.gravity = 50
-		self.jump_force = 10
+		self.jump_force = 12
 
 
 	def __set_is_grounded ( self ):
@@ -28,10 +32,19 @@ class Player ( Entity ):
 		if keys[pygame.K_SPACE] and self.is_grounded: self.direction.y = -self.jump_force
 
 
-	def _set_direction( self ):
+	def __input ( self ):
 		keys = pygame.key.get_pressed()
 		self.__jump(keys)
 		self.__left_or_right(keys)
+		self.__shoot(keys)
+
+
+	def _set_direction( self ): self.__input()
+
+	def __shoot ( self, keys: ScancodeWrapper ):
+		if keys[pygame.K_s] and not self.shoot_timer.active:
+			print('BLAAAAM !!!')
+			self.shoot_timer.start()
 
 	def __set_flip ( self ): 
 		if self.direction.x < 0: self.flip = True
@@ -61,6 +74,7 @@ class Player ( Entity ):
 		self.__set_image()
 		
 	def update ( self, dt ):
+		self.shoot_timer.update()
 		self.__set_is_grounded()
 		self._set_direction()
 		self.__set_flip()

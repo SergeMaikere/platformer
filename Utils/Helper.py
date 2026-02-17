@@ -37,4 +37,4 @@ def load_sounds ( *path: str ):
 		if files: sounds = reduce( partial(add_sound, root), files, {} )
 	return sounds
 
-def get_random_pos (): return ( uniform(0, WINDOW_WIDTH), uniform(0, WINDOW_HEIGHT) ) 
+def get_random_pos ( x: float, y: float ): return ( uniform(0, x), uniform(0, y) ) 
