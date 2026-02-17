@@ -12,7 +12,7 @@ class Player ( Entity ):
 		self.frames = frames
 		self.flip = False
 
-		self.shoot_timer = Timer(5000)
+		self.shoot_timer = Timer(500)
 
 		self.collision_sprites = collision_sprites
 
