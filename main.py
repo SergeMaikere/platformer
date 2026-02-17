@@ -1,4 +1,5 @@
 from random import randint
+from typing import TypeVarTuple
 from Utils.AllSprites import AllSprites
 from Utils.Timer import Timer
 from settings import * 
@@ -43,6 +44,7 @@ class Game ():
         self.player_frames = get_frames('assets', 'images', 'player')
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
         self.worm_frames = get_frames('assets', 'images', 'enemies', 'worm')
+        if self.worm_frames: self.worm_flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.worm_frames ]
         self.bullet_surface = get_frame(join('assets', 'images', 'gun'), 'bullet.png')
         self.fire_surface = get_frame(join('assets', 'images', 'gun'), 'fire.png')
         self.sounds = load_sounds('assets', 'audio')
@@ -68,7 +70,7 @@ class Game ():
         if not entity.name == 'Worm': return entity
 
         patrol_area = pygame.FRect(entity.x, entity.y, entity.width, entity.height)
-        if self.worm_frames: Worm(self.worm_frames, patrol_area, self.all_sprites)
+        if self.worm_frames: Worm((self.worm_frames, self.worm_flipped_frames), patrol_area, self.all_sprites)
         return entity
 
     def __make_bee ( self ):
