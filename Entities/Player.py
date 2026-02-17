@@ -14,7 +14,7 @@ class Player ( Entity ):
 
 		self.is_grounded = False
 		self.gravity = 50
-		self.jump_force = 10
+		self.jump_force = 12
 
 
 	def __set_is_grounded ( self ):
