@@ -1,3 +1,5 @@
+from random import randint
+from typing import TypeVarTuple
 from Utils.AllSprites import AllSprites
 from Utils.Timer import Timer
 from settings import * 
@@ -6,7 +8,7 @@ from pytmx.pytmx import TiledObject
 from Utils.GameSprite import GameSprite
 from Utils.Group import Group
 from pygame import Event
-from Utils.Helper import get_frames, get_random_pos, load_sounds, load_map, pipe
+from Utils.Helper import get_frames, get_frame, load_sounds, load_map, pipe
 from Entities.Player import Player
 from Entities.Worm import Worm
 from Entities.Bee import Bee
@@ -24,7 +26,7 @@ class Game ():
         self.collision_sprites = Group('collision_sprites')
 
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
-        self.bee_timer = Timer(3000, self.__make_bee, repeat= True, autostart= True)
+        self.bee_timer = Timer(1000, self.__make_bee, repeat= True, autostart= True)
 
         self.running = True
 
@@ -37,6 +39,15 @@ class Game ():
             self.__time_to_quit(event)
 
     def __set_background ( self ): self.screen.fill(BG_COLOR)
+
+    def __load_assets ( self ):
+        self.player_frames = get_frames('assets', 'images', 'player')
+        self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
+        self.worm_frames = get_frames('assets', 'images', 'enemies', 'worm')
+        if self.worm_frames: self.worm_flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.worm_frames ]
+        self.bullet_surface = get_frame(join('assets', 'images', 'gun'), 'bullet.png')
+        self.fire_surface = get_frame(join('assets', 'images', 'gun'), 'fire.png')
+        self.sounds = load_sounds('assets', 'audio')
 
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
         for x, y, image in map.get_layer_by_name('Main').tiles():
@@ -51,19 +62,20 @@ class Game ():
     def __make_player ( self, entity: TiledObject ):
         if not entity.name == 'Player': return entity
 
-        frames = get_frames('assets', 'images', 'player')
-        if frames: self.player = Player(frames, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
+        if self.player_frames: 
+            self.player = Player(self.player_frames, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
         return entity
 
     def __make_worm ( self, entity: TiledObject ):
         if not entity.name == 'Worm': return entity
 
-        frames = get_frames('assets', 'images', 'enemies', 'worm')
-        if frames: Worm(frames, self.all_sprites, topleft=(entity.x, entity.y))
+        patrol_area = pygame.FRect(entity.x, entity.y, entity.width, entity.height)
+        if self.worm_frames: Worm((self.worm_frames, self.worm_flipped_frames), patrol_area, self.all_sprites)
         return entity
 
     def __make_bee ( self ):
-        if self.bee_frames: Bee(self.bee_frames, self.all_sprites, topleft= get_random_pos( self.map.width * TILE_SIZE, self.map.height * TILE_SIZE ))
+        if self.bee_frames: 
+            Bee( self.bee_frames, self.all_sprites, topleft=(self.map.width * TILE_SIZE, randint(0, self.map.height * TILE_SIZE)) )
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
@@ -81,7 +93,6 @@ class Game ():
             self.__set_entities
         )( self.map )
 
-    def __set_sounds ( self): self.sounds = load_sounds('assets', 'audio')
 
     def __set_volumes ( self ):
         if self.sounds:
@@ -93,12 +104,11 @@ class Game ():
         if self.sounds: self.sounds['music'].play()
 
     def __setup_sounds ( self ):
-            self.__set_sounds()
             self.__set_volumes()
-            self.__play_soundtrack()
+            # self.__play_soundtrack()
 
     def run ( self ):
-
+        self.__load_assets()
         self.__setup_map_assets()
         self.__setup_sounds()
 

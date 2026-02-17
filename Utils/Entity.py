@@ -27,6 +27,11 @@ class Entity ( GameSprite ):
 		self.frames_i = self.frames_i + self.animation_speed * dt
 		self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
 
+	def _constraint ( self ):
+		pass
+
+	def _destroy ( self ): self.kill()
+
 	def _move_x_wise ( self, dt: float ):
 		self.hitbox.x += self.direction.x * self.speed * dt
 
@@ -52,3 +57,9 @@ class Entity ( GameSprite ):
 		self._y_collision_manager(collision_sprites)
 
 	def _move_after_collision ( self, dt ): self.rect.center = self.hitbox.center
+
+	def update ( self, dt: float ):
+		self._set_direction()
+		self._move(dt)
+		self._animate(dt)
+		self._constraint()
