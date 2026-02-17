@@ -1,3 +1,4 @@
+from random import randint
 from Utils.AllSprites import AllSprites
 from Utils.Timer import Timer
 from settings import * 
@@ -24,7 +25,7 @@ class Game ():
         self.collision_sprites = Group('collision_sprites')
 
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
-        self.bee_timer = Timer(3000, self.__make_bee, repeat= True, autostart= True)
+        self.bee_timer = Timer(1000, self.__make_bee, repeat= True, autostart= True)
 
         self.running = True
 
@@ -63,7 +64,7 @@ class Game ():
         return entity
 
     def __make_bee ( self ):
-        if self.bee_frames: Bee(self.bee_frames, self.all_sprites, topleft= get_random_pos( self.map.width * TILE_SIZE, self.map.height * TILE_SIZE ))
+        if self.bee_frames: Bee( self.bee_frames, self.all_sprites, topleft=(self.map.width * TILE_SIZE, randint(0, self.map.height * TILE_SIZE)) )
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
@@ -95,7 +96,7 @@ class Game ():
     def __setup_sounds ( self ):
             self.__set_sounds()
             self.__set_volumes()
-            self.__play_soundtrack()
+            # self.__play_soundtrack()
 
     def run ( self ):
 
