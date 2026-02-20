@@ -1,5 +1,5 @@
 from random import randint
-from typing import TypeVarTuple
+from GameObjects.Bullet import Bullet
 from Utils.AllSprites import AllSprites
 from Utils.Timer import Timer
 from settings import * 
@@ -21,6 +21,7 @@ class Game ():
         self.clock = pygame.time.Clock()
 
         self.map = load_map()
+        self.map_size = { 'width': self.map.width * TILE_SIZE, 'height': self.map.height * TILE_SIZE }
 
         self.all_sprites = AllSprites('all_sprites')
         self.collision_sprites = Group('collision_sprites')
@@ -46,6 +47,7 @@ class Game ():
         self.worm_frames = get_frames('assets', 'images', 'enemies', 'worm')
         if self.worm_frames: self.worm_flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.worm_frames ]
         self.bullet_surface = get_frame(join('assets', 'images', 'gun'), 'bullet.png')
+        self.flipped_bullet_surface = pygame.transform.flip(self.bullet_surface, True, False)
         self.fire_surface = get_frame(join('assets', 'images', 'gun'), 'fire.png')
         self.sounds = load_sounds('assets', 'audio')
 
@@ -63,7 +65,7 @@ class Game ():
         if not entity.name == 'Player': return entity
 
         if self.player_frames: 
-            self.player = Player(self.player_frames, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
+            self.player = Player(self.player_frames, self.__make_bullet, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
         return entity
 
     def __make_worm ( self, entity: TiledObject ):
@@ -75,7 +77,10 @@ class Game ():
 
     def __make_bee ( self ):
         if self.bee_frames: 
-            Bee( self.bee_frames, self.all_sprites, topleft=(self.map.width * TILE_SIZE, randint(0, self.map.height * TILE_SIZE)) )
+            Bee( self.bee_frames, self.all_sprites, topleft=(self.map_size['width'], randint(0, self.map_size['height'])) )
+
+    def __make_bullet ( self ):
+        Bullet((self.bullet_surface, self.flipped_bullet_surface), self.map_size['width'], self.player, self.all_sprites )
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
