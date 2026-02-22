@@ -1,3 +1,4 @@
+from functools import partial
 from settings import * 
 from random import randint
 from pygame import Event
@@ -11,7 +12,7 @@ from Entities.Bee import Bee
 from Utils.AllSprites import AllSprites
 from Utils.GameSprite import GameSprite
 from Utils.Group import Group
-from Utils.Helper import get_frames, get_frame, load_sounds, load_map, pipe
+from Utils.Helper import get_frames, get_frame, load_sounds, load_map, pipe, get_flipped_surface
 from Utils.Timer import Timer
 
 class Game ():
@@ -26,6 +27,8 @@ class Game ():
 
         self.all_sprites = AllSprites('all_sprites')
         self.collision_sprites = Group('collision_sprites')
+        self.bullet_sprites = pygame.sprite.Group()
+        self.enemy_sprites = pygame.sprite.Group()
 
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
         self.bee_timer = Timer(1000, self.__make_bee, repeat= True, autostart= True)
@@ -44,13 +47,16 @@ class Game ():
 
     def __load_assets ( self ):
         self.player_frames = get_frames('assets', 'images', 'player')
+        
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
+
         self.worm_frames = get_frames('assets', 'images', 'enemies', 'worm')
         if self.worm_frames: self.worm_flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.worm_frames ]
-        self.bullet_surface = get_frame(join('assets', 'images', 'gun'), 'bullet.png')
-        self.flipped_bullet_surface = pygame.transform.flip(self.bullet_surface, True, False)
-        self.fire_surface = get_frame(join('assets', 'images', 'gun'), 'fire.png')
-        self.flipped_fire_surface = pygame.transform.flip(self.fire_surface, True, False)
+        
+        self.bullet_surface, self.flipped_bullet_surface = get_flipped_surface( get_frame(join('assets', 'images', 'gun'), 'bullet.png') )
+        
+        self.fire_surface, self.flipped_fire_surface = get_flipped_surface( get_frame(join('assets', 'images', 'gun'), 'fire.png') )
+        
         self.sounds = load_sounds('assets', 'audio')
 
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
@@ -74,15 +80,15 @@ class Game ():
         if not entity.name == 'Worm': return entity
 
         patrol_area = pygame.FRect(entity.x, entity.y, entity.width, entity.height)
-        if self.worm_frames: Worm((self.worm_frames, self.worm_flipped_frames), patrol_area, self.all_sprites)
+        if self.worm_frames: Worm((self.worm_frames, self.worm_flipped_frames), patrol_area, self.all_sprites, self.enemy_sprites)
         return entity
 
     def __make_bee ( self ):
         if self.bee_frames: 
-            Bee( self.bee_frames, self.all_sprites, topleft=(self.map_size['width'], randint(0, self.map_size['height'])) )
+            Bee( self.bee_frames, self.all_sprites, self.enemy_sprites, topleft=(self.map_size['width'], randint(0, self.map_size['height'])) )
 
     def __make_bullet ( self ):
-        Bullet((self.bullet_surface, self.flipped_bullet_surface), self.map_size['width'], self.player, self.all_sprites )
+        Bullet((self.bullet_surface, self.flipped_bullet_surface), self.map_size['width'], self.player, self.all_sprites, self.bullet_sprites )
 
     def __make_fire ( self ):
         Fire((self.fire_surface, self.flipped_fire_surface), self.player, self.all_sprites)
@@ -117,6 +123,27 @@ class Game ():
             self.__set_volumes()
             # self.__play_soundtrack()
 
+    def __get_bullet_collisions ( self, bullet: Bullet ):
+        return pygame.sprite.spritecollide(bullet, self.enemy_sprites, False, pygame.sprite.collide_mask)
+
+    def __kill_bullet ( self, bullet: Bullet, enemies: list[Bee | Worm] ):
+        if not enemies: return enemies
+        bullet.kill()
+        return enemies
+
+    def __kill_enemies ( self, enemies: list[Bee | Worm] ):
+        if not enemies: return
+        for enemy in enemies: enemy._destroy()
+
+    def __enemy_collision ( self ):
+        for bullet in self.bullet_sprites:
+            pipe(
+                self.__get_bullet_collisions,
+                partial(self.__kill_bullet, bullet),
+                self.__kill_enemies
+            )(bullet)
+
+
     def run ( self ):
         self.__load_assets()
         self.__setup_map_assets()
@@ -131,6 +158,8 @@ class Game ():
             self.__set_background()
 
             self.bee_timer.update()
+
+            self.__enemy_collision()
 
             self.all_sprites.update(dt)
 
