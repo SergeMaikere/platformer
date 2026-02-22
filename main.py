@@ -1,7 +1,6 @@
 from functools import partial
 from settings import * 
 from random import randint
-from pygame import Event
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
 from GameObjects.Bullet import Bullet
@@ -60,8 +59,8 @@ class Game ():
         
         self.sounds = load_sounds('assets', 'audio')
 
-    def __play_sound ( self, sound: str ): 
-        if self.sounds: self.sounds[sound].play()
+    def __play_sound ( self, sound: str, loops: int = 0 ): 
+        if self.sounds: self.sounds[sound].play(loops)
 
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
         for x, y, image in map.get_layer_by_name('Main').tiles():
@@ -116,13 +115,13 @@ class Game ():
 
     def __set_volumes ( self ):
         if self.sounds:
-            self.sounds['music'].set_volume(1)
-            self.sounds['shoot'].set_volume(1)
-            self.sounds['impact'].set_volume(1)
+            self.sounds['music'].set_volume(0.1)
+            self.sounds['shoot'].set_volume(0.3)
+            self.sounds['impact'].set_volume(0.3)
 
     def __setup_sounds ( self ):
             self.__set_volumes()
-            self.__play_sound('music')
+            self.__play_sound('music', loops=-1)
 
     def __get_bullet_collisions ( self, bullet: Bullet ):
         return pygame.sprite.spritecollide(bullet, self.enemy_sprites, False, pygame.sprite.collide_mask)
