@@ -5,7 +5,7 @@ from settings import *
 from typing import Any, Callable, Iterable
 from pytmx import TiledMap
 from functools import partial, reduce
-from random import uniform
+from random import randint
 
 pipe = lambda *funcs: lambda arg: reduce( lambda g, f: f(g), funcs, arg )
 
@@ -37,4 +37,6 @@ def load_sounds ( *path: str ):
 		if files: sounds = reduce( partial(add_sound, root), files, {} )
 	return sounds
 
-def get_random_pos ( x: float, y: float ): return ( uniform(0, x), uniform(0, y) ) 
+def get_random_pos ( x: int, y: int ): return ( randint(0, x), randint(0, y) ) 
+
+get_flipped_surface: Callable[ [Surface], tuple[Surface, Surface] ] = lambda surface: ( surface, pygame.transform.flip(surface, True, False) )
