@@ -59,6 +59,9 @@ class Game ():
         
         self.sounds = load_sounds('assets', 'audio')
 
+    def __play_sound ( self, sound: str ): 
+        if self.sounds: self.sounds[sound].play()
+
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
         for x, y, image in map.get_layer_by_name('Main').tiles():
             GameSprite(image, self.all_sprites, self.collision_sprites, topleft=(x * TILE_SIZE, y * TILE_SIZE))
@@ -90,8 +93,9 @@ class Game ():
     def __make_bullet ( self ):
         Bullet((self.bullet_surface, self.flipped_bullet_surface), self.map_size['width'], self.player, self.all_sprites, self.bullet_sprites )
 
-    def __make_fire ( self ):
+    def __make_fire ( self ):   
         Fire((self.fire_surface, self.flipped_fire_surface), self.player, self.all_sprites)
+        self.__play_sound('shoot')
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
@@ -116,12 +120,11 @@ class Game ():
             self.sounds['shoot'].set_volume(3)
             self.sounds['impact'].set_volume(3)
 
-    def __play_soundtrack( self ): 
-        if self.sounds: self.sounds['music'].play()
+
 
     def __setup_sounds ( self ):
             self.__set_volumes()
-            # self.__play_soundtrack()
+            # self.__play_sound('music')
 
     def __get_bullet_collisions ( self, bullet: Bullet ):
         return pygame.sprite.spritecollide(bullet, self.enemy_sprites, False, pygame.sprite.collide_mask)
@@ -133,7 +136,9 @@ class Game ():
 
     def __kill_enemies ( self, enemies: list[Bee | Worm] ):
         if not enemies: return
-        for enemy in enemies: enemy._destroy()
+        for enemy in enemies: 
+            enemy._destroy()
+            self.__play_sound('impact')
 
     def __enemy_collision ( self ):
         for bullet in self.bullet_sprites:

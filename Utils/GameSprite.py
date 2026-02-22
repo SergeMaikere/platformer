@@ -8,3 +8,4 @@ class GameSprite ( pygame.sprite.Sprite ):
 
 		self.image = image
 		self.rect: FRect = image.get_frect(**anchor)
+		self.mask = pygame.mask.from_surface(self.image)

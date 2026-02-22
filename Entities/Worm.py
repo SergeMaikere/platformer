@@ -3,9 +3,9 @@ from pygame import Surface
 from pygame.rect import FRect
 from pygame.sprite import Group
 from settings import *
-from Utils.Entity import Entity
+from Utils.Enemy import Enemy
 
-class Worm ( Entity ):
+class Worm ( Enemy ):
 	def __init__(self, frames: tuple[list[Surface], list[Surface]], patrol_area: FRect, *groups: Group) -> None:
 		super().__init__(frames[0], *groups, bottomleft=patrol_area.bottomleft)
 
