@@ -7,7 +7,7 @@ from settings import *
 from Utils.Entity import Entity
 
 class Player ( Entity ):
-	def __init__(self, frames: list[Surface], bullet_maker: Callable, collision_sprites, *groups: Group, **anchor: tuple[float, float]) -> None:
+	def __init__(self, frames: list[Surface], bullet_maker: Callable, fire_maker: Callable, collision_sprites, *groups: Group, **anchor: tuple[float, float]) -> None:
 		super().__init__(frames, *groups, **anchor)
 
 		self.frames = frames
@@ -15,6 +15,7 @@ class Player ( Entity ):
 
 		self.shoot_timer = Timer(500)
 		self.bullet_maker = bullet_maker
+		self.fire_maker = fire_maker
 
 		self.collision_sprites = collision_sprites
 
@@ -33,19 +34,18 @@ class Player ( Entity ):
 	def __jump ( self, keys: ScancodeWrapper ):
 		if keys[pygame.K_SPACE] and self.is_grounded: self.direction.y = -self.jump_force
 
-
 	def __input ( self ):
 		keys = pygame.key.get_pressed()
 		self.__jump(keys)
 		self.__left_or_right(keys)
 		self.__shoot(keys)
 
-
 	def _set_direction( self ): self.__input()
 
 	def __shoot ( self, keys: ScancodeWrapper ):
 		if keys[pygame.K_s] and not self.shoot_timer.active:
 			self.bullet_maker()
+			self.fire_maker()
 			self.shoot_timer.start()
 
 	def __set_flip ( self ): 
