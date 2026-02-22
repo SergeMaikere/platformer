@@ -37,6 +37,6 @@ def load_sounds ( *path: str ):
 		if files: sounds = reduce( partial(add_sound, root), files, {} )
 	return sounds
 
-def get_random_pos ( x: float, y: float ): return ( randint(0, x), randint(0, y) ) 
+def get_random_pos ( x: int, y: int ): return ( randint(0, x), randint(0, y) ) 
 
 get_flipped_surface: Callable[ [Surface], tuple[Surface, Surface] ] = lambda surface: ( surface, pygame.transform.flip(surface, True, False) )

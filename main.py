@@ -31,17 +31,18 @@ class Game ():
         self.enemy_sprites = pygame.sprite.Group()
 
         self.bee_frames = get_frames('assets', 'images', 'enemies', 'bee')
-        self.bee_timer = Timer(1000, self.__make_bee, repeat= True, autostart= True)
+        self.bee_timer = Timer(1000, self.__make_bee, repeat=True, autostart=True)
 
         self.running = True
 
-    def __time_to_quit ( self, event: Event ):
-        self.running = not event.type == pygame.QUIT
-        return event
+    def game_over ( self ): self.running = False
 
-    def __check_event_loop ( self ):
-        for event in pygame.event.get():
-            self.__time_to_quit(event)
+    def __is_player_exiting_game ( self ): return any( event.type == pygame.QUIT for event in pygame.event.get() )
+
+    def __has_player_fallen ( self ): return self.player.rect.y > self.map_size['height'] + 900
+
+    def __check_quit_game ( self ):
+        self.running = not ( self.__is_player_exiting_game() or self.__has_player_fallen() )
 
     def __set_background ( self ): self.screen.fill(BG_COLOR)
 
@@ -113,18 +114,15 @@ class Game ():
             self.__set_entities
         )( self.map )
 
-
     def __set_volumes ( self ):
         if self.sounds:
-            self.sounds['music'].set_volume(3)
-            self.sounds['shoot'].set_volume(3)
-            self.sounds['impact'].set_volume(3)
-
-
+            self.sounds['music'].set_volume(1)
+            self.sounds['shoot'].set_volume(1)
+            self.sounds['impact'].set_volume(1)
 
     def __setup_sounds ( self ):
             self.__set_volumes()
-            # self.__play_sound('music')
+            self.__play_sound('music')
 
     def __get_bullet_collisions ( self, bullet: Bullet ):
         return pygame.sprite.spritecollide(bullet, self.enemy_sprites, False, pygame.sprite.collide_mask)
@@ -140,7 +138,7 @@ class Game ():
             enemy._destroy()
             self.__play_sound('impact')
 
-    def __enemy_collision ( self ):
+    def __bullet_enemy_collision ( self ):
         for bullet in self.bullet_sprites:
             pipe(
                 self.__get_bullet_collisions,
@@ -148,6 +146,15 @@ class Game ():
                 self.__kill_enemies
             )(bullet)
 
+    def __player_enemy_collision ( self ):
+        collisions = pygame.sprite.spritecollide(self.player, self.enemy_sprites, False, pygame.sprite.collide_mask)
+        if collisions: 
+            for enemy in collisions:
+                if not enemy.death_timer.active: self.game_over()
+
+    def __collisions ( self ):
+        self.__player_enemy_collision()
+        self.__bullet_enemy_collision()
 
     def run ( self ):
         self.__load_assets()
@@ -158,13 +165,13 @@ class Game ():
 
             dt = self.clock.tick(FRAMERATE) / 1000
 
-            self.__check_event_loop()
+            self.__check_quit_game()
 
             self.__set_background()
 
+            self.__collisions()
+            
             self.bee_timer.update()
-
-            self.__enemy_collision()
 
             self.all_sprites.update(dt)
 

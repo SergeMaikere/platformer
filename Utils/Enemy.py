@@ -8,7 +8,7 @@ class Enemy ( Entity ):
 	def __init__(self, frames: list[Surface], *groups: Group, **anchor: tuple[float, float]) -> None:
 		super().__init__(frames, *groups, **anchor)
 
-		self.death_timer = Timer(300, self.kill)
+		self.death_timer = Timer(200, self.kill)
 
 
 	def _destroy( self ):
