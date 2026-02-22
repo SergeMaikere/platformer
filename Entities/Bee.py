@@ -18,5 +18,4 @@ class Bee ( Entity ):
 		self.direction.y = sin(pygame.time.get_ticks() / self.frequency)
 
 	def _constraint(self):
-		if self.rect.right > 0: return
-		self.kill()
+		if self.rect.right < 0: self.kill()

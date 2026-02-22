@@ -1,17 +1,18 @@
-from random import randint
-from typing import TypeVarTuple
-from Utils.AllSprites import AllSprites
-from Utils.Timer import Timer
 from settings import * 
+from random import randint
+from pygame import Event
 from pytmx import TiledMap
 from pytmx.pytmx import TiledObject
-from Utils.GameSprite import GameSprite
-from Utils.Group import Group
-from pygame import Event
-from Utils.Helper import get_frames, get_frame, load_sounds, load_map, pipe
+from GameObjects.Bullet import Bullet
+from GameObjects.Fire import Fire
 from Entities.Player import Player
 from Entities.Worm import Worm
 from Entities.Bee import Bee
+from Utils.AllSprites import AllSprites
+from Utils.GameSprite import GameSprite
+from Utils.Group import Group
+from Utils.Helper import get_frames, get_frame, load_sounds, load_map, pipe
+from Utils.Timer import Timer
 
 class Game ():
     def __init__(self) -> None:
@@ -21,6 +22,7 @@ class Game ():
         self.clock = pygame.time.Clock()
 
         self.map = load_map()
+        self.map_size = { 'width': self.map.width * TILE_SIZE, 'height': self.map.height * TILE_SIZE }
 
         self.all_sprites = AllSprites('all_sprites')
         self.collision_sprites = Group('collision_sprites')
@@ -46,7 +48,9 @@ class Game ():
         self.worm_frames = get_frames('assets', 'images', 'enemies', 'worm')
         if self.worm_frames: self.worm_flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.worm_frames ]
         self.bullet_surface = get_frame(join('assets', 'images', 'gun'), 'bullet.png')
+        self.flipped_bullet_surface = pygame.transform.flip(self.bullet_surface, True, False)
         self.fire_surface = get_frame(join('assets', 'images', 'gun'), 'fire.png')
+        self.flipped_fire_surface = pygame.transform.flip(self.fire_surface, True, False)
         self.sounds = load_sounds('assets', 'audio')
 
     def __set_ground ( self, map: TiledMap ) -> TiledMap:
@@ -63,7 +67,7 @@ class Game ():
         if not entity.name == 'Player': return entity
 
         if self.player_frames: 
-            self.player = Player(self.player_frames, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
+            self.player = Player(self.player_frames, self.__make_bullet, self.__make_fire, self.collision_sprites, self.all_sprites, topleft=(entity.x, entity.y))
         return entity
 
     def __make_worm ( self, entity: TiledObject ):
@@ -75,7 +79,13 @@ class Game ():
 
     def __make_bee ( self ):
         if self.bee_frames: 
-            Bee( self.bee_frames, self.all_sprites, topleft=(self.map.width * TILE_SIZE, randint(0, self.map.height * TILE_SIZE)) )
+            Bee( self.bee_frames, self.all_sprites, topleft=(self.map_size['width'], randint(0, self.map_size['height'])) )
+
+    def __make_bullet ( self ):
+        Bullet((self.bullet_surface, self.flipped_bullet_surface), self.map_size['width'], self.player, self.all_sprites )
+
+    def __make_fire ( self ):
+        Fire((self.fire_surface, self.flipped_fire_surface), self.player, self.all_sprites)
 
     def __set_entities ( self, map: TiledMap ) -> TiledMap:
         for entity in map.get_layer_by_name('Entities'):
