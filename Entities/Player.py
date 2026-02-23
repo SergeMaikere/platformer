@@ -11,6 +11,7 @@ class Player ( Entity ):
 		super().__init__(frames, *groups, **anchor)
 
 		self.frames = frames
+		self.flipped_frames = [ pygame.transform.flip(frame, True, False) for frame in self.frames ]
 		self.flip = False
 
 		self.shoot_timer = Timer(500)
@@ -68,8 +69,9 @@ class Player ( Entity ):
 			self.frames_i = self.frames_i + self.animation_speed * dt if self.direction else 0
 
 	def __set_image ( self ): 
-		self.image = self.frames[ int(self.frames_i) % len(self.frames) ]
-		self.image = pygame.transform.flip(self.image, self.flip, False)
+		frames = self.frames if not self.flip else self.flipped_frames
+		self.image = frames[ int(self.frames_i) % len(frames) ]
+
 
 	def _animate ( self, dt: float ):
 		self.__set_frame_i(dt)
