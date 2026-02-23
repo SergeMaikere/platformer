@@ -105,7 +105,7 @@ class Game ():
             )( entity )
         return map
 
-
+ 
     def __setup_map_assets ( self ):
         pipe(
             self.__set_ground,

@@ -9,7 +9,7 @@ class Bee ( Enemy ):
 	def __init__(self, frames: list[Surface], *groups: Group, **anchor: tuple[float, float]) -> None:
 		super().__init__(frames, *groups, **anchor)
 
-		self.speed = randint(300, 500)
+		self.speed = randint(200, 400)
 		self.frequency = randint(300, 600)
 		self.direction.x = -1
 
